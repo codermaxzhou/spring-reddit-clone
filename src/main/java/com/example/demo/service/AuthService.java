@@ -11,6 +11,7 @@ import com.example.demo.model.VerificationToken;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.VerificationTokenRepository;
 import com.example.demo.security.JwtProvider;
+import com.example.demo.util.Constants;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,12 +42,13 @@ public class AuthService {
 
     @Transactional
     public void signup(RegisterRequest registerRequest) {
-        User user = new User();
-        user.setUsername(registerRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setEmail(registerRequest.getEmail());
-        user.setCreated(Instant.now());
-        user.setEnabled(false);
+        User user = User.builder()
+            .username(registerRequest.getUsername())
+            .password(passwordEncoder.encode(registerRequest.getPassword()))
+            .email(registerRequest.getEmail())
+            .created(Instant.now())
+            .enabled(false)
+            .build();
 
         userRepository.save(user);
 
@@ -54,7 +56,7 @@ public class AuthService {
         mailService.sendMail(new NotificationEmail("Please Activate your Account",
                 user.getEmail(), "Thank you for signing up to Spring Reddit Clone, " +
                 "Please click on the url below to activate your account: " +
-                "http://localhost:8080/api/auth/accountVerification/" + token));
+                Constants.ACTIVATE_EMAIL + token));
     }
 
     public void verifyAccount(String token) {
